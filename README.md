@@ -2,7 +2,7 @@
 ## Introduction
 
 In this repo, we will show you how to create build a cloud native Kubernetes cluster vending machine with vcluster (Cloud Native : GitOps).
-)
+
 ###  Prerequisites
 
 - [Docker](https://docs.docker.com/engine/install/ubuntu/)
