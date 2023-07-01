@@ -1,15 +1,17 @@
-Cloud Native (GitOps)
-
 
 ## Introduction
 
-In this repo, we will show you how to create build a cloud native Kubernetes cluster vending machine with vcluster.
+In this repo, we will show you how to create build a cloud native Kubernetes cluster vending machine with vcluster (Cloud Native : GitOps).
+)
+###  Prerequisites
 
-## Prerequisites
+- [Docker](https://docs.docker.com/engine/install/ubuntu/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+- [helm](https://helm.sh/docs/intro/install/)
+- [k3d](https://k3d.io/#installation)
+- [vcluster](https://www.vcluster.com/docs/getting-started/setup)
 
-- `kubectl`, `helm`, `vcluster`, `k3d` ust be installed.
-
-Install vlcuster cli:
+Install vlcuster cli (example):
 ```
 curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
 ```
@@ -22,14 +24,16 @@ cd scripts/ && ./init-k3d-demo-env.sh
 Example Output:
 
 $ ./init-k3d-demo-env.sh 
-.....
+....
+....
+....
 ArcgoCD admin password:
 V7JBqouePrCmtzwj
 ```
 
 ## Deploy The Application, Using GitOps
 
-via GitOps through ArgoCD. We define the ArgoCD application like this:
+GitOps through ArgoCD. We define the ArgoCD application like this:
 
 ````yaml
 apiVersion: argoproj.io/v1alpha1
@@ -62,7 +66,9 @@ We install following applications:
 
 - vcluster (only this application is needed for this playground)
 
-Note: for production we can add additiona applications like:
+### Production Notes:
+
+For Production we can add additiona applications like:
 
 - argocd
 - cert-manager
@@ -70,7 +76,7 @@ Note: for production we can add additiona applications like:
 - ingress-nginx
 - kube_prometheus_stack
 
- Note: To use Ingress for the `vcluster`, we need to enable passthrough-mode in the `ingress-nginx` Helm chart.
+To use Ingress (Production) for the `vcluster`, we need to enable passthrough-mode in the `ingress-nginx` Helm chart.
 
 ````yaml
 ...
@@ -87,7 +93,7 @@ chart: ingress-nginx
 
 We follow here the `App of Apps` approach. You can find more about this interesting pattern here -> https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern
 
-### ArgoCD waves (for Production)
+Note: ArgoCD waves 
 
 It's important here to mention, that we are using the `argocd.argoproj.io/sync-wave` annotation to define the different waves.
 
@@ -105,7 +111,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 ```
 
-## vcluster
+## VCluster
 
 Virtual clusters are fully working Kubernetes clusters that run on top of other Kubernetes clusters. Compared to fully separate "real" clusters, virtual clusters do not have their own node pools. Instead, they are scheduling workloads inside the underlying cluster while having their own separate control plane.
 
@@ -143,18 +149,18 @@ We use `kusomization.yaml` again to glue the ArgoCD applications together. The s
 
 Currently `vcluster` needs, when installed via `helm` the CIDR range provided by the `serviceCIDR` flag.
 
-To get the CIDR range, we use following target in our `taskfile`:
+To get the CIDR range, we can execute:
 
 ```bash
-kubectl create service clusterip test --clusterip 1.1.1.1 --tcp=80:80
+$ kubectl create service clusterip test --clusterip 1.1.1.1 --tcp=80:80
 
 error: failed to create ClusterIP service: Service "test" is invalid: spec.clusterIPs: Invalid value: []string{"1.1.1.1"}: failed to allocate IP 1.1.1.1: the provided IP (1.1.1.1) is not in the valid range. The range of valid IPs is 10.43.0.0/16
 
 ```
 
-The valid IP range will be displayed in the `taskfile` output. Here it is `10.43.0.0/16`
+The valid IP range will be displayed in the command output. Here it is `10.43.0.0/16`
 
-Here an example of a `vcluster` application, using `k0s`:
+Here an example of a `vcluster` application, using `team-1`:
 
 ````yaml
 apiVersion: argoproj.io/v1alpha1
@@ -162,7 +168,7 @@ kind: Application
 metadata:
   name: team-1
   labels:
-    team: team-4
+    team: team-1
     department: development
     project: backend
     distro: k3s
@@ -172,7 +178,7 @@ metadata:
 spec:
   destination:
     name: in-cluster
-    namespace: team-4
+    namespace: team-1
   project: default
   source:
     repoURL: 'https://charts.loft.sh'
@@ -187,14 +193,14 @@ spec:
             extended: true
         serviceCIDR: 10.43.0.0/16
         ingress:
-          enabled: true
+          enabled: false
     chart: vcluster
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
 ````
 
-As we deployed an ingress controller, we can use this to access the `vcluster`.
+As we deployed an ingress controller via init demo script, we can use this to access the `vcluster`.
 
 This is absolut brilliant, as we can now order via git pull requests new cluster.
 
@@ -203,6 +209,14 @@ This is absolut brilliant, as we can now order via git pull requests new cluster
 I am going to use the `vcluster` cli here. But you could also get the `kubeconfig` from your Ops Team
 
 ```bash
+
+$ vcluster list
+
+ NAME     NAMESPACE   STATUS    CONNECTED   CREATED                          AGE      CONTEXT            
+ team-3   team-3      Running               2023-07-01 19:14:00 +0300 EEST   26m28s   k3d-argo-vcluster  
+ team-2   team-2      Running               2023-07-01 19:17:01 +0300 EEST   23m27s   k3d-argo-vcluster  
+ team-1   team-1      Running               2023-07-01 19:06:41 +0300 EEST   33m47s   k3d-argo-vcluster 
+
 $ vcluster connect team-1 -n team-1
 done √ Switched active kube context to vcluster_team-1_team-1_k3d-argo-vcluster
 warn   Since you are using port-forwarding to connect, you will need to leave this terminal open
@@ -212,20 +226,28 @@ Forwarding from 127.0.0.1:10317 -> 8443
 Forwarding from [::1]:10317 -> 8443
 
 
+$ vcluster connect team-3 -n team-3 --server=https://....
+done √ Switched active kube context to vcluster_team-3_team-3_k3d-argo-vcluster
+- Use `vcluster disconnect` to return to your previous kube context
+- Use `kubectl get namespaces` to access the vcluster
 
-Note: vcluster connect team-1 -n team-1 --server=https://team-1.example.com
-[done] √ Virtual cluster kube config written to: ./kubeconfig.yaml. You can access the cluster via `kubectl --kubeconfig ./kubeconfig.yaml get namespaces`
 ```
 
 Now we can access the cluster as usual, with the `kubectl` command.
 
 ```bash
-kubectl --kubeconfig ./kubeconfig.yaml get namespaces
+$ kubectl get ns
 NAME              STATUS   AGE
-default           Active   5d1h
-kube-system       Active   5d1h
-kube-public       Active   5d1h
-kube-node-lease   Active   5d1h
+kube-system       Active   53m
+default           Active   53m
+kube-public       Active   53m
+kube-node-lease   Active   53m
+ingress-nginx     Active   52m
+argocd            Active   49m
+team-1            Active   33m
+team-2            Active   33m
+team-3            Active   33m
+
 ```
 
 Or schedule our workload:
@@ -253,56 +275,42 @@ font-family: Tahoma, Verdana, Arial, sans-serif; }
 working. Further configuration is required.</p>
 
 Check:
-davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get svc -n team-1
-NAME                                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
-team-1-headless                          ClusterIP   None            <none>        443/TCP                  16m
-team-1                                   ClusterIP   10.43.156.154   <none>        443/TCP                  16m
-kube-dns-x-kube-system-x-team-1          ClusterIP   10.43.200.71    <none>        53/UDP,53/TCP,9153/TCP   14m
-team-1-node-k3d-argo-vcluster-server-0   ClusterIP   10.43.141.230   <none>        10250/TCP                14m
-nginx                                    ClusterIP   10.43.240.253   <none>        80/TCP                   3m35s
-davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get all -n team-1
+
+$ kubectl get ing -n team-1
+NAME             CLASS   HOSTS                             ADDRESS      PORTS   AGE
+argocd-ingress   nginx   team1-nginx.192.168.1.99.nip.io   172.30.0.2   80      17m
+
+$ kubectl get all -n team-1
 NAME                                                  READY   STATUS    RESTARTS   AGE
-pod/team-1-0                                          2/2     Running   0          16m
-pod/coredns-6ff5b88b48-q8hqr-x-kube-system-x-team-1   1/1     Running   0          15m
-pod/nginx                                             1/1     Running   0          4m23s
+pod/coredns-6ff5b88b48-tzh59-x-kube-system-x-team-1   1/1     Running   0          33m
+pod/team-1-0                                          2/2     Running   0          24m
+pod/nginx                                             1/1     Running   0          17m
 
 NAME                                             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
-service/team-1-headless                          ClusterIP   None            <none>        443/TCP                  16m
-service/team-1                                   ClusterIP   10.43.156.154   <none>        443/TCP                  16m
-service/kube-dns-x-kube-system-x-team-1          ClusterIP   10.43.200.71    <none>        53/UDP,53/TCP,9153/TCP   15m
-service/team-1-node-k3d-argo-vcluster-server-0   ClusterIP   10.43.141.230   <none>        10250/TCP                15m
-service/nginx                                    ClusterIP   10.43.240.253   <none>        80/TCP                   4m5s
+service/team-1-headless                          ClusterIP   None            <none>        443/TCP                  35m
+service/team-1                                   ClusterIP   10.43.27.9      <none>        443/TCP                  35m
+service/kube-dns-x-kube-system-x-team-1          ClusterIP   10.43.125.200   <none>        53/UDP,53/TCP,9153/TCP   33m
+service/team-1-node-k3d-argo-vcluster-server-0   ClusterIP   10.43.132.38    <none>        10250/TCP                33m
+service/nginx                                    ClusterIP   10.43.65.15     <none>        80/TCP                   17m
 
 NAME                      READY   AGE
-statefulset.apps/team-1   1/1     16m
-davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get ing -n team-1
-NAME             CLASS    HOSTS                             ADDRESS      PORTS   AGE
-team-1           <none>   vcluster.local                    172.29.0.2   80      16m
-argocd-ingress   nginx    team1-nginx.192.168.1.99.nip.io   172.29.0.2   80      5m17s
-
-
+statefulset.apps/team-1   1/1     35m
 
 ```
 
 
-Screenshots:
-```
-k3d-argo-vcluster-playground-apps-team-1.png
-k3d-argo-vcluster-playground-apps-vcluster.png
-k3d-argo-vcluster-playground-apps-applications.png
-```
+### Screenshots:
 
+<img src="pictures/k3d-argo-vcluster-playground-apps-team-1.png?raw=true" width="900">
 
-## Monitoring
+<img src="pictures/k3d-argo-vcluster-playground-apps-vcluster.png?raw=true" width="900">
 
-With our monitoring stack, we can monitor our `vcluster`, very comfortably. Just head over to the Grafana and browse the dashboard you need.
+<img src="pictures/k3d-argo-vcluster-playground-apps-applications.png?raw=true" width="900">
 
 
 ## Some links
 
 - https://github.com/dirien/vcluster-webinar
 - https://www.vcluster.com/
-- https://taskfile.dev/
 - https://argoproj.github.io/argo-cd/
-- https://www.scaleway.com/
 
