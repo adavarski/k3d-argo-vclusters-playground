@@ -203,7 +203,17 @@ This is absolut brilliant, as we can now order via git pull requests new cluster
 I am going to use the `vcluster` cli here. But you could also get the `kubeconfig` from your Ops Team
 
 ```bash
-vcluster connect team-1 -n team-1 --server=https://team-1.
+$ vcluster connect team-1 -n team-1
+done √ Switched active kube context to vcluster_team-1_team-1_k3d-argo-vcluster
+warn   Since you are using port-forwarding to connect, you will need to leave this terminal open
+- Use CTRL+C to return to your previous kube context
+- Use `kubectl get namespaces` in another terminal to access the vcluster
+Forwarding from 127.0.0.1:10317 -> 8443
+Forwarding from [::1]:10317 -> 8443
+
+
+
+Note: vcluster connect team-1 -n team-1 --server=https://team-1.example.com
 [done] √ Virtual cluster kube config written to: ./kubeconfig.yaml. You can access the cluster via `kubectl --kubeconfig ./kubeconfig.yaml get namespaces`
 ```
 
@@ -221,8 +231,8 @@ kube-node-lease   Active   5d1h
 Or schedule our workload:
 
 ```bash
-kubectl run nginx --image=nginx
-kubectl expose pod nginx --port=80
+kubectl run nginx --image=nginx -n team-1
+kubectl expose pod nginx --port=80 -n team-1
 
 kubectl apply -f ingresses/ingress-team-1-nginx.yaml -n team-1
 
@@ -241,6 +251,36 @@ font-family: Tahoma, Verdana, Arial, sans-serif; }
 <h1>Welcome to nginx!</h1>
 <p>If you see this page, the nginx web server is successfully installed and
 working. Further configuration is required.</p>
+
+Check:
+davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get svc -n team-1
+NAME                                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+team-1-headless                          ClusterIP   None            <none>        443/TCP                  16m
+team-1                                   ClusterIP   10.43.156.154   <none>        443/TCP                  16m
+kube-dns-x-kube-system-x-team-1          ClusterIP   10.43.200.71    <none>        53/UDP,53/TCP,9153/TCP   14m
+team-1-node-k3d-argo-vcluster-server-0   ClusterIP   10.43.141.230   <none>        10250/TCP                14m
+nginx                                    ClusterIP   10.43.240.253   <none>        80/TCP                   3m35s
+davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get all -n team-1
+NAME                                                  READY   STATUS    RESTARTS   AGE
+pod/team-1-0                                          2/2     Running   0          16m
+pod/coredns-6ff5b88b48-q8hqr-x-kube-system-x-team-1   1/1     Running   0          15m
+pod/nginx                                             1/1     Running   0          4m23s
+
+NAME                                             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+service/team-1-headless                          ClusterIP   None            <none>        443/TCP                  16m
+service/team-1                                   ClusterIP   10.43.156.154   <none>        443/TCP                  16m
+service/kube-dns-x-kube-system-x-team-1          ClusterIP   10.43.200.71    <none>        53/UDP,53/TCP,9153/TCP   15m
+service/team-1-node-k3d-argo-vcluster-server-0   ClusterIP   10.43.141.230   <none>        10250/TCP                15m
+service/nginx                                    ClusterIP   10.43.240.253   <none>        80/TCP                   4m5s
+
+NAME                      READY   AGE
+statefulset.apps/team-1   1/1     16m
+davar@devops:~/CROSSPLAIN/TRY-1/VCLUSTER/k3d-argo-vclusters-playground$ kubectl get ing -n team-1
+NAME             CLASS    HOSTS                             ADDRESS      PORTS   AGE
+team-1           <none>   vcluster.local                    172.29.0.2   80      16m
+argocd-ingress   nginx    team1-nginx.192.168.1.99.nip.io   172.29.0.2   80      5m17s
+
+
 
 ```
 
