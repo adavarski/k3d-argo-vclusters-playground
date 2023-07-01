@@ -3,7 +3,4 @@ kind: Kustomization
 
 namespace: argocd
 
-resources:
-  - webshop-department/team-1.yaml
-  - webshop-backend/team-3.yaml
-  - beta-test-k0s/team-4.yaml
+
