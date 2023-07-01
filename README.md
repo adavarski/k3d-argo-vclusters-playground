@@ -31,7 +31,7 @@ ArcgoCD admin password:
 V7JBqouePrCmtzwj
 ```
 
-## Deploy The Application, Using GitOps
+### Deploy The Application, Using GitOps
 
 GitOps through ArgoCD. We define the ArgoCD application like this:
 
@@ -202,11 +202,11 @@ spec:
 
 As we deployed an ingress controller via init demo script, we can use this to access the `vcluster`.
 
-This is absolut brilliant, as we can now order via git pull requests new cluster.
+We can now order via git pull requests new cluster.
 
 ### Accessing the vcluster
 
-I am going to use the `vcluster` cli here. But you could also get the `kubeconfig` from your Ops Team
+We are going to use the `vcluster` cli here. But you could also get the `kubeconfig` from your Ops Team
 
 ```bash
 
@@ -279,6 +279,14 @@ Check:
 $ kubectl get ing -n team-1
 NAME             CLASS   HOSTS                             ADDRESS      PORTS   AGE
 argocd-ingress   nginx   team1-nginx.192.168.1.99.nip.io   172.30.0.2   80      17m
+
+$ kubectl get ing --all-namespaces
+NAMESPACE   NAME             CLASS    HOSTS                             ADDRESS      PORTS   AGE
+argocd      argocd-ingress   nginx    argocd.192.168.1.99.nip.io        172.30.0.2   80      61m
+team-3      team-3           <none>   vcluster.local                    172.30.0.2   80      35m
+team-1      argocd-ingress   nginx    team1-nginx.192.168.1.99.nip.io   172.30.0.2   80      29m
+
+
 
 $ kubectl get all -n team-1
 NAME                                                  READY   STATUS    RESTARTS   AGE
