@@ -284,6 +284,15 @@ argocd-ingress   nginx    team1-nginx.192.168.1.99.nip.io   172.29.0.2   80     
 
 ```
 
+
+Screenshots:
+```
+k3d-argo-vcluster-playground-apps-team-1.png
+k3d-argo-vcluster-playground-apps-vcluster.png
+k3d-argo-vcluster-playground-apps-applications.png
+```
+
+
 ## Monitoring
 
 With our monitoring stack, we can monitor our `vcluster`, very comfortably. Just head over to the Grafana and browse the dashboard you need.
