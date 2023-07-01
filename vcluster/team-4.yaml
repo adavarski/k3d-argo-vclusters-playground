@@ -28,7 +28,7 @@ spec:
             extended: true
         serviceCIDR: 10.43.0.0/16
         ingress:
-          enabled: true
+          enabled: false
     chart: vcluster
   syncPolicy:
     syncOptions:
