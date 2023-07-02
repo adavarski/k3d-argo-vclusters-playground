@@ -1,7 +1,7 @@
 
 ## Introduction
 
-Cloud Native vcluster + argo.
+Kubernetes in Kubernetes: Cloud Native GitOps with vcluster + argo.
 
 ###  Prerequisites
 
