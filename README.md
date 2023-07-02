@@ -316,9 +316,9 @@ statefulset.apps/team-1   1/1     35m
 <img src="pictures/k3d-argo-vcluster-playground-apps-applications.png?raw=true" width="900">
 
 
-## Some links
-
-- https://github.com/dirien/vcluster-webinar
+## Ref:
+- https://github.com/loft-sh/vcluster
 - https://www.vcluster.com/
 - https://argoproj.github.io/argo-cd/
+- https://github.com/dirien/vcluster-webinar
 
