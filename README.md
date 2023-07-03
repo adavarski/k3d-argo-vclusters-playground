@@ -78,7 +78,9 @@ For Production we can add additiona applications like:
 
 To use Ingress (Production) for the `vcluster`, we need to enable passthrough-mode in the `ingress-nginx` Helm chart 
 
+```
 helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace --set controller.publishService.enabled=true --set controller.extraArgs.enable-ssl-passthrough=true
+```
 
 or 
 
