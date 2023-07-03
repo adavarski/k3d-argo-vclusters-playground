@@ -76,7 +76,11 @@ For Production we can add additiona applications like:
 - ingress-nginx
 - kube_prometheus_stack
 
-To use Ingress (Production) for the `vcluster`, we need to enable passthrough-mode in the `ingress-nginx` Helm chart.
+To use Ingress (Production) for the `vcluster`, we need to enable passthrough-mode in the `ingress-nginx` Helm chart 
+
+helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace --set controller.publishService.enabled=true --set controller.extraArgs.enable-ssl-passthrough=true
+
+or 
 
 ````yaml
 ...
@@ -89,6 +93,7 @@ helm:
       ...
 chart: ingress-nginx
 ...
+
 ````
 
 We follow here the `App of Apps` approach. You can find more about this interesting pattern here -> https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern
@@ -321,4 +326,7 @@ statefulset.apps/team-1   1/1     35m
 - https://www.vcluster.com/
 - https://argoproj.github.io/argo-cd/
 - https://github.com/dirien/vcluster-webinar
+
+
+Note: Note: Argo CLI, helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace --set controller.publishService.enabled=true --set controller.extraArgs.enable-ssl-passthrough=true 
 
